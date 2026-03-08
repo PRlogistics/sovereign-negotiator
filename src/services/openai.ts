@@ -1,4 +1,6 @@
-﻿const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+﻿/// <reference types="vite/client" />
+
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 
 export const openaiService = {
   async generateStrategy(units: number, maxPrice: number, targetPrice: number, style: string): Promise<any> {

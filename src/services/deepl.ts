@@ -1,4 +1,6 @@
-﻿const DEEPL_API_KEY = import.meta.env.VITE_DEEPL_API_KEY || '';
+﻿/// <reference types="vite/client" />
+
+const DEEPL_API_KEY = import.meta.env.VITE_DEEPL_API_KEY || '';
 
 export const deeplService = {
   async translate(text: string, targetLang: string, sourceLang?: string): Promise<string> {

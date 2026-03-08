@@ -1,4 +1,6 @@
-﻿const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
+﻿/// <reference types="vite/client" />
+
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
 
 export interface VoiceCloneResponse {
   voice_id: string;
