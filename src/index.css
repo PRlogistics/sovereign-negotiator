@@ -57,3 +57,8 @@
     linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
 }
+
+
+/* Performance fixes */
+.animate-pulse-glow { will-change: box-shadow; }
+.grid-pattern { will-change: transform; }
