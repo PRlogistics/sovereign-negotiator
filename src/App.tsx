@@ -1,11 +1,12 @@
-﻿import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+﻿import { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { 
   Mic, Shield, Zap, Lock, Cpu, 
-  ChevronRight, Play, Pause, Volume2,
-  Target, MessageSquare, Phone, CheckCircle,
+  Play, Pause, Volume2, Target, 
+  MessageSquare, Phone, CheckCircle,
   TrendingUp, Building2, FileText, Award, Users,
-  ArrowRight, Sparkles, Radio, Fingerprint, Server
+  Sparkles, Fingerprint, Server, Globe,
+  ChevronRight, Radio, Lock as LockIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,399 +14,413 @@ import { Progress } from '@/components/ui/progress'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Toaster, toast } from 'sonner'
+import { Sidebar } from '@/components/Sidebar'
 
-// Voice Waveform
-const VoiceWaveform = ({ isActive }: { isActive: boolean }) => {
-  return (
-    <div className="flex items-center justify-center gap-1 h-12">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="w-1 rounded-full bg-cyan-400"
-          animate={isActive ? {
-            height: [4, Math.random() * 30 + 6, 4],
-            opacity: [0.5, 1, 0.5]
-          } : { height: 4, opacity: 0.3 }}
-          transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.05 }}
-        />
-      ))}
-    </div>
-  )
-}
+// Voice Waveform - simplified
+const VoiceWaveform = ({ isActive }: { isActive: boolean }) => (
+  <div className="flex items-center justify-center gap-1 h-12">
+    {Array.from({ length: 12 }).map((_, i) => (
+      <motion.div
+        key={i}
+        className="w-1.5 rounded-full bg-cyan-400"
+        animate={isActive ? { height: [4, 16 + Math.random() * 16, 4] } : { height: 4 }}
+        transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.05 }}
+      />
+    ))}
+  </div>
+)
 
-// Hero Section
-const HeroSection = ({ onStartDemo }: { onStartDemo: () => void }) => {
-  const [isPlaying, setIsPlaying] = useState(false)
+// Main Dashboard Layout
+function App() {
+  const [activeSection, setActiveSection] = useState('hero')
+  const contentRef = useRef<HTMLDivElement>(null)
 
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
-      <div className="absolute inset-0 grid-pattern" />
-      <motion.div className="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" 
-        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-        transition={{ duration: 8, repeat: Infinity }} />
-      
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        <Badge variant="outline" className="mb-4 border-cyan-400/30 text-cyan-400">
-          <Sparkles className="w-3 h-3 mr-1 inline" />
-          Singapore's First Sovereign AI Negotiator
-        </Badge>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
-          <span className="text-white">The </span>
-          <span className="text-gradient">Sovereign</span>
-          <br />
-          <span className="text-white">Negotiator</span>
-        </h1>
-
-        <p className="text-lg text-muted-foreground mb-6">
-          Conduct high-stakes business in any language with your cloned voice.
-          <br />
-          <span className="text-cyan-400">Total privacy. Total control.</span>
-        </p>
-
-        <Card className="glass max-w-lg mx-auto mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
-                  <Volume2 className="w-4 h-4 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-medium text-white">AI Voice Preview</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setIsPlaying(!isPlaying)}>
-                {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              </Button>
-            </div>
-            <VoiceWaveform isActive={isPlaying} />
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button onClick={onStartDemo} className="bg-gradient-to-r from-cyan-400 to-teal-400 text-black">
-            <Play className="w-4 h-4 mr-2" />
-            Start Live Demo
-          </Button>
-        </div>
-
-        <div className="mt-12 grid grid-cols-4 gap-4">
-          {[{v:'<200ms',l:'Latency'},{v:'100%',l:'Local'},{v:'50+',l:'Languages'},{v:'SG',l:'Host'}].map((s,i) => (
-            <div key={i} className="text-center">
-              <p className="text-xl font-bold text-gradient">{s.v}</p>
-              <p className="text-xs text-muted-foreground">{s.l}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Voice Enrollment
-const VoiceEnrollmentSection = () => {
-  const [isRecording, setIsRecording] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [isComplete, setIsComplete] = useState(false)
-
-  useEffect(() => {
-    if (isRecording && progress < 100) {
-      const timer = setTimeout(() => setProgress(p => Math.min(p + 2, 100)), 100)
-      return () => clearTimeout(timer)
-    } else if (progress >= 100 && !isComplete) {
-      setIsComplete(true)
-      setIsRecording(false)
-      toast.success('Voice clone created!')
-    }
-  }, [isRecording, progress, isComplete])
-
-  return (
-    <section id="voice-section" className="py-16 px-4 relative">
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <Badge variant="outline" className="mb-3 border-violet-400/30 text-violet-400">
-            Step 1: Voice Enrollment
-          </Badge>
-          <h2 className="text-3xl font-bold text-gradient-purple">Clone Your Voice</h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="glass p-6 text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center">
-              <Mic className={`w-10 h-10 text-white ${isRecording ? 'animate-pulse' : ''}`} />
-            </div>
-            <Progress value={progress} className="h-2 mb-4" />
-            <div className="flex gap-2 justify-center">
-              {!isRecording && !isComplete && (
-                <Button onClick={() => {setIsRecording(true); setProgress(0);}} className="bg-cyan-400 text-black">
-                  <Mic className="w-4 h-4 mr-1" /> Start
-                </Button>
-              )}
-              {isRecording && <Button variant="destructive" onClick={() => setIsRecording(false)}>Stop</Button>}
-              {isComplete && <Button variant="outline" className="border-green-400 text-green-400"><CheckCircle className="w-4 h-4 mr-1" /> Cloned</Button>}
-            </div>
-          </Card>
-
-          <Card className="glass p-4">
-            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-violet-400" /> Ethics Script
-            </h3>
-            <p className="text-xs text-muted-foreground font-mono">
-              I authorize this system to create a digital voice clone for sovereign business negotiation. My biometric data will be encrypted and stored locally.
-            </p>
-            {isComplete && (
-              <div className="mt-4 p-3 bg-green-400/10 rounded-lg border border-green-400/30">
-                <Fingerprint className="w-5 h-5 text-green-400 inline mr-2" />
-                <span className="text-sm text-green-400">Voice Passport Created</span>
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Strategy Section
-const StrategySection = () => {
-  const [targets, setTargets] = useState({ units: 1000, maxPrice: 50, targetPrice: 42 })
-  const [style, setStyle] = useState<'aggressive' | 'collaborative'>('collaborative')
-
-  return (
-    <section className="py-16 px-4 relative">
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <Badge variant="outline" className="mb-3 border-emerald-400/30 text-emerald-400">
-            Step 2: Strategy
-          </Badge>
-          <h2 className="text-3xl font-bold text-gradient">Define Strategy</h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="glass p-4 space-y-4">
-            <h3 className="text-sm font-medium flex items-center gap-2"><Target className="w-4 h-4 text-cyan-400" /> Goals</h3>
-            
-            <div>
-              <label className="text-xs text-muted-foreground">Units</label>
-              <div className="flex items-center gap-3">
-                <Slider value={[targets.units]} onValueChange={([v]) => setTargets(t => ({ ...t, units: v }))} max={5000} step={100} />
-                <span className="text-cyan-400 text-sm w-12">{targets.units}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-muted-foreground">Max Price</label>
-              <div className="flex items-center gap-3">
-                <Slider value={[targets.maxPrice]} onValueChange={([v]) => setTargets(t => ({ ...t, maxPrice: v }))} max={100} />
-                <span className="text-cyan-400 text-sm w-12">${targets.maxPrice}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button size="sm" variant={style === 'aggressive' ? 'default' : 'outline'} onClick={() => setStyle('aggressive')} className={style === 'aggressive' ? 'bg-orange-400' : ''}>
-                <Zap className="w-3 h-3 mr-1" /> Aggressive
-              </Button>
-              <Button size="sm" variant={style === 'collaborative' ? 'default' : 'outline'} onClick={() => setStyle('collaborative')} className={style === 'collaborative' ? 'bg-cyan-400 text-black' : ''}>
-                <Users className="w-3 h-3 mr-1" /> Collaborative
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="glass p-4">
-            <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Sparkles className="w-4 h-4 text-violet-400" /> AI Analysis</h3>
-            <div className="space-y-2">
-              <div className="p-2 bg-black/30 rounded">
-                <p className="text-xs text-cyan-400">Opening Anchor</p>
-                <p className="text-xs text-muted-foreground">Start at ${Math.round(targets.targetPrice * 0.85)}</p>
-              </div>
-              <div className="p-2 bg-black/30 rounded">
-                <p className="text-xs text-cyan-400">Success Probability</p>
-                <p className="text-xl font-bold text-emerald-400">{style === 'collaborative' ? '87%' : '72%'}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Negotiation Section
-const NegotiationSection = () => {
-  const [isActive, setIsActive] = useState(false)
-  const [messages, setMessages] = useState([{ role: 'ai', text: 'Ready to initiate call. Press Start.' }])
-  const [pendingApproval, setPendingApproval] = useState<string | null>(null)
-
-  const startNegotiation = () => {
-    setIsActive(true)
-    setMessages([{ role: 'other', text: 'Hello, interested in purchasing units?' }])
+  const navigateTo = (section: string) => {
+    setActiveSection(section)
+    const el = document.getElementById(section)
+    el?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <section className="py-16 px-4 relative">
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <Badge variant="outline" className="mb-3 border-cyan-400/30 text-cyan-400">Step 3: Live Call</Badge>
-          <h2 className="text-3xl font-bold text-gradient">The Live Call</h2>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex">
+      <Toaster position="top-center" richColors />
+      <Sidebar activeSection={activeSection} onNavigate={navigateTo} />
+      
+      <main ref={contentRef} className="flex-1 ml-64 overflow-y-auto">
+        {/* Hero Section */}
+        <section id="hero" className="min-h-screen flex items-center justify-center p-8 relative">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-20 left-20 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-20 right-20 w-72 h-72 bg-violet-500/20 rounded-full blur-3xl" />
+          </div>
+          
+          <div className="relative z-10 max-w-3xl text-center">
+            <Badge className="mb-6 bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Singapore's First Sovereign AI Negotiator
+            </Badge>
+            
+            <h1 className="text-5xl font-bold mb-6 leading-tight">
+              The <span className="text-cyan-400">Sovereign</span><br />
+              Negotiator
+            </h1>
+            
+            <p className="text-lg text-gray-400 mb-8 max-w-xl mx-auto">
+              Conduct high-stakes business in any language with your cloned voice. 
+              Total privacy. Total control.
+            </p>
 
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <Card className="glass">
-              <CardHeader className="border-b border-white/10 pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm\">Shanghai Manufacturing</span>
-                  </div>
-                  <Badge className={isActive ? 'bg-green-400 text-black' : ''}>{isActive ? 'LIVE' : 'STANDBY'}</Badge>
+            <div className="flex gap-4 justify-center mb-12">
+              <Button 
+                onClick={() => navigateTo('voice')}
+                className="bg-cyan-500 hover:bg-cyan-600 text-black font-medium px-6"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Demo
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigateTo('architecture')}
+                className="border-white/10 hover:bg-white/5"
+              >
+                View Architecture
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-6 max-w-2xl mx-auto">
+              {[
+                { value: '<200ms', label: 'Latency' },
+                { value: '100%', label: 'Local' },
+                { value: '50+', label: 'Languages' },
+                { value: 'SG', label: 'Sovereign' }
+              ].map((stat, i) => (
+                <div key={i} className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-2xl font-bold text-cyan-400">{stat.value}</p>
+                  <p className="text-xs text-gray-500">{stat.label}</p>
                 </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
-                  {messages.map((m: any, i) => (
-                    <div key={i} className={`p-2 rounded text-xs ${m.role === 'ai' ? 'bg-violet-400/20' : 'bg-white/5'}`}>
-                      {m.text}
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Voice Enrollment */}
+        <section id="voice" className="min-h-screen p-8 pt-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-violet-500/10 text-violet-400 border-violet-500/20">Step 1</Badge>
+              <h2 className="text-3xl font-bold">Clone Your Voice</h2>
+              <p className="text-gray-400">Record and clone your voice for negotiations</p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="bg-[#111118] border-white/5">
+                <CardContent className="p-8 text-center">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
+                    <Mic className="w-10 h-10 text-white" />
+                  </div>
+                  <Progress value={0} className="h-2 mb-4 bg-white/10" />
+                  <Button className="bg-cyan-500 hover:bg-cyan-600 text-black">
+                    <Mic className="w-4 h-4 mr-2" />
+                    Start Recording
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#111118] border-white/5">
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-violet-400" />
+                    Recording Tips
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 text-sm text-gray-400">
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="w-4 h-4 text-cyan-400 mt-0.5" />
+                      Record in a quiet environment
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="w-4 h-4 text-cyan-400 mt-0.5" />
+                      Speak clearly and naturally
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <ChevronRight className="w-4 h-4 text-cyan-400 mt-0.5" />
+                      Minimum 30 seconds recommended
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Strategy */}
+        <section id="strategy" className="min-h-screen p-8 pt-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Step 2</Badge>
+              <h2 className="text-3xl font-bold">Define Strategy</h2>
+              <p className="text-gray-400">Set your negotiation parameters</p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="bg-[#111118] border-white/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-cyan-400" />
+                    Negotiation Goals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <label className="text-sm text-gray-400 mb-2 block">Units to Purchase</label>
+                    <div className="flex items-center gap-4">
+                      <Slider defaultValue={[1000]} max={5000} step={100} className="flex-1" />
+                      <span className="text-cyan-400 font-mono w-16">1000</span>
                     </div>
-                  ))}
-                </div>
-                {!isActive ? (
-                  <Button onClick={startNegotiation} className="w-full bg-cyan-400 text-black"><Play className="w-3 h-3 mr-1" /> Start</Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPendingApproval('Offer $43/unit?')}><MessageSquare className="w-3 h-3 mr-1" /> Compromise</Button>
-                    <Button variant="destructive" size="sm" onClick={() => setIsActive(false)}>End</Button>
                   </div>
-                )}
+                  <div>
+                    <label className="text-sm text-gray-400 mb-2 block">Maximum Price ($)</label>
+                    <div className="flex items-center gap-4">
+                      <Slider defaultValue={[50]} max={100} step={1} className="flex-1" />
+                      <span className="text-cyan-400 font-mono w-16">$50</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button variant="outline" className="border-white/10">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Aggressive
+                    </Button>
+                    <Button className="bg-cyan-500 hover:bg-cyan-600 text-black">
+                      <Users className="w-4 h-4 mr-2" />
+                      Collaborative
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#111118] border-white/5 border-cyan-500/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-violet-400" />
+                    AI Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-white/5 rounded-lg">
+                    <p className="text-sm text-cyan-400 mb-1">Opening Anchor</p>
+                    <p className="text-sm text-gray-400">Start at $36 to create room</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-lg">
+                    <p className="text-sm text-cyan-400 mb-1">Success Probability</p>
+                    <p className="text-2xl font-bold text-emerald-400">87%</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Live Negotiation */}
+        <section id="negotiation" className="min-h-screen p-8 pt-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Step 3</Badge>
+              <h2 className="text-3xl font-bold">Live Negotiation</h2>
+              <p className="text-gray-400">AI negotiates in real-time</p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card className="bg-[#111118] border-white/5 h-full">
+                  <CardHeader className="border-b border-white/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
+                          <Phone className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Active Negotiation</p>
+                          <p className="text-xs text-gray-500">Shanghai Manufacturing</p>
+                        </div>
+                      </div>
+                      <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">LIVE</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="flex justify-center mb-4">
+                      <VoiceWaveform isActive={true} />
+                    </div>
+                    <div className="space-y-3 mb-4">
+                      <div className="p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                        <p className="text-xs text-violet-400 mb-1">AI (Your Voice)</p>
+                        <p className="text-sm">Hello, interested in purchasing units?</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 border-white/10">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Suggest
+                      </Button>
+                      <Button variant="destructive">End</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-[#111118] border-white/5">
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-400" />
+                    Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <LockIcon className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                    <p className="text-sm text-gray-500">All deals require approval</p>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-2">Target Language</p>
+                    <select className="w-full bg-black/50 border border-white/10 rounded px-2 py-1 text-sm">
+                      <option>Mandarin (Chinese)</option>
+                      <option>German</option>
+                      <option>Japanese</option>
+                    </select>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Architecture */}
+        <section id="architecture" className="min-h-screen p-8 pt-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-cyan-500/10 text-cyan-400 border-cyan-500/20">Technical</Badge>
+              <h2 className="text-3xl font-bold">Three-Layer Stack</h2>
+              <p className="text-gray-400">Built for privacy and performance</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { title: 'Privacy Layer', icon: Lock, color: 'cyan', items: ['Llama-3-70B', 'Whisper-v3', 'Singtel RE:AI'] },
+                { title: 'Identity Layer', icon: Fingerprint, color: 'violet', items: ['ElevenLabs API', '<200ms TTS', 'Encrypted'] },
+                { title: 'Action Layer', icon: Cpu, color: 'emerald', items: ['OpenAI GPT-4', 'DeepL API', '50+ Languages'] }
+              ].map((layer, i) => (
+                <Card key={i} className="bg-[#111118] border-white/5">
+                  <CardHeader>
+                    <div className={`w-10 h-10 rounded-lg bg-${layer.color}-500/10 flex items-center justify-center mb-3`}>
+                      <layer.icon className={`w-5 h-5 text-${layer.color}-400`} />
+                    </div>
+                    <CardTitle className="text-lg">{layer.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {layer.items.map((item, j) => (
+                        <div key={j} className="p-2 bg-white/5 rounded text-sm">{item}</div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Launch Strategy */}
+        <section id="launch" className="min-h-screen p-8 pt-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Singapore</Badge>
+              <h2 className="text-3xl font-bold">Launch Strategy</h2>
+              <p className="text-gray-400">Built in Singapore, for the world</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: Building2, title: 'Incorporate', desc: 'Pte Ltd', status: 'done' },
+                { icon: FileText, title: 'IP Protection', desc: 'Patent', status: 'progress' },
+                { icon: Award, title: 'Funding', desc: 'S$50K', status: 'pending' },
+                { icon: Server, title: 'Scaling', desc: 'GPU Credits', status: 'pending' }
+              ].map((step, i) => (
+                <Card key={i} className={`bg-[#111118] border-white/5 ${step.status === 'done' ? 'border-emerald-500/20' : ''}`}>
+                  <CardContent className="p-4 text-center">
+                    <div className={`w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center ${step.status === 'done' ? 'bg-emerald-500/10' : 'bg-white/5'}`}>
+                      <step.icon className={`w-5 h-5 ${step.status === 'done' ? 'text-emerald-400' : 'text-gray-500'}`} />
+                    </div>
+                    <p className="font-medium text-sm">{step.title}</p>
+                    <p className="text-xs text-gray-500">{step.desc}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Moat */}
+        <section id="moat" className="min-h-screen p-8 pt-24 pb-24">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <Badge className="mb-2 bg-violet-500/10 text-violet-400 border-violet-500/20">Protection</Badge>
+              <h2 className="text-3xl font-bold">Competitive Moat</h2>
+              <p className="text-gray-400">Three layers of protection</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+              {[
+                { title: 'Technical', icon: Cpu, color: 'cyan', points: ['Audio watermarking', 'Sub-200ms latency', 'Local processing'] },
+                { title: 'Legal', icon: Shield, color: 'violet', points: ['Singapore DPAs', 'Patent pending', 'GDPR compliance'] },
+                { title: 'Market', icon: TrendingUp, color: 'emerald', points: ['First-mover', 'SME focus', 'Gov partnerships'] }
+              ].map((moat, i) => (
+                <Card key={i} className="bg-[#111118] border-white/5">
+                  <CardHeader>
+                    <div className={`w-10 h-10 rounded-lg bg-${moat.color}-500/10 flex items-center justify-center mb-3`}>
+                      <moat.icon className={`w-5 h-5 text-${moat.color}-400`} />
+                    </div>
+                    <CardTitle>{moat.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {moat.points.map((p, j) => (
+                        <li key={j} className="flex items-start gap-2 text-sm text-gray-400">
+                          <ChevronRight className={`w-4 h-4 text-${moat.color}-400 mt-0.5`} />
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="bg-[#111118] border-cyan-500/20 max-w-lg mx-auto">
+              <CardContent className="p-8 text-center">
+                <h3 className="text-xl font-bold mb-2">Ready to Negotiate?</h3>
+                <p className="text-sm text-gray-400 mb-6">Join the waitlist for early access</p>
+                <Button className="bg-cyan-500 hover:bg-cyan-600 text-black font-medium px-8">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Join Waitlist
+                </Button>
               </CardContent>
             </Card>
           </div>
+        </section>
 
-          <Card className="glass p-4">
-            <h3 className="text-xs font-medium flex items-center gap-2 mb-3"><Shield className="w-4 h-4 text-emerald-400" /> Verification</h3>
-            {pendingApproval ? (
-              <div className="p-3 bg-amber-400/10 rounded border border-amber-400/30">
-                <p className="text-xs mb-2">{pendingApproval}</p>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 bg-emerald-400 text-black" onClick={() => {toast.success('Approved!'); setPendingApproval(null);}}>Approve</Button>
-                  <Button size="sm" variant="outline" onClick={() => setPendingApproval(null)}>Reject</Button>
-                </div>
+        {/* Footer */}
+        <footer className="p-8 border-t border-white/5">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-4">All deals require approval</p>
-            )}
-          </Card>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Architecture Section
-const ArchitectureSection = () => {
-  const layers = [
-    { title: 'Privacy', icon: Lock, color: 'cyan', items: ['Llama-3-70B', 'Whisper-v3', 'Singtel RE:AI'] },
-    { title: 'Identity', icon: Fingerprint, color: 'violet', items: ['CosyVoice 2', '<200ms TTS', 'Encrypted'] },
-    { title: 'Action', icon: Cpu, color: 'emerald', items: ['LangGraph', '50+ Languages', 'Swipe-Approve'] }
-  ]
-
-  return (
-    <section className="py-16 px-4 relative">
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <Badge variant="outline" className="mb-3 border-cyan-400/30 text-cyan-400">Architecture</Badge>
-          <h2 className="text-3xl font-bold text-gradient">Three-Layer Stack</h2>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          {layers.map((l, i) => (
-            <Card key={i} className="glass p-4">
-              <l.icon className={`w-6 h-6 mb-2 text-${l.color}-400`} />
-              <h3 className="font-medium mb-2">{l.title}</h3>
-              {l.items.map((item, j) => (
-                <div key={j} className="text-xs text-muted-foreground py-1">{item}</div>
-              ))}
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// Launch Section
-const LaunchSection = () => (
-  <section className="py-16 px-4 relative">
-    <div className="absolute inset-0 grid-pattern opacity-50" />
-    <div className="relative z-10 max-w-4xl mx-auto text-center">
-      <Badge variant="outline" className="mb-3 border-emerald-400/30 text-emerald-400">Singapore Launch</Badge>
-      <h2 className="text-3xl font-bold text-gradient mb-6">Built in Singapore</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[{i:Building2,t:'Incorporate',d:'Pte Ltd'},{i:FileText,t:'IP',d:'Patent'},{i:Award,t:'Funding',d:'S$50K'},{i:Server,t:'Scale',d:'GPU Credits'}].map((s,i) => (
-          <Card key={i} className="glass p-3 text-center">
-            <s.i className="w-5 h-5 mx-auto mb-2 text-cyan-400" />
-            <p className="text-sm font-medium\">{s.t}</p>
-            <p className="text-xs text-muted-foreground\">{s.d}</p>
-          </Card>
-        ))}
-      </div>
-    </div>
-  </section>
-)
-
-// Moat Section
-const MoatSection = () => (
-  <section className="py-16 px-4 relative">
-    <div className="absolute inset-0 grid-pattern opacity-50" />
-    <div className="relative z-10 max-w-4xl mx-auto text-center">
-      <Badge variant="outline" className="mb-3 border-violet-400/30 text-violet-400">Competitive Moat</Badge>
-      <h2 className="text-3xl font-bold text-gradient-purple mb-6\">Three Layers of Protection</h2>
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        {[{t:'Technical',i:Cpu,p:['Audio watermarking','Sub-200ms latency']},{t:'Legal',i:Shield,p:['Singapore DPAs','Patent pending']},{t:'Market',i:TrendingUp,p:['First-mover','SME focus']}].map((m,i) => (
-          <Card key={i} className="glass p-4 text-left">
-            <m.i className="w-5 h-5 mb-2 text-cyan-400" />
-            <h3 className="font-medium mb-2\">{m.t}</h3>
-            {m.p.map((pt,j) => <p key={j} className="text-xs text-muted-foreground\">{pt}</p>)}
-          </Card>
-        ))}
-      </div>
-      <Card className="glass max-w-md mx-auto p-6">
-        <h3 className="text-xl font-bold mb-3\">Ready to Negotiate?</h3>
-        <Button className="bg-cyan-400 text-black" onClick={() => toast.success('Added to waitlist!')}>
-          <Sparkles className="w-4 h-4 mr-2" /> Join Waitlist
-        </Button>
-      </Card>
-    </div>
-  </section>
-)
-
-// Footer
-const Footer = () => (
-  <footer className="py-8 px-4 border-t border-white/10 text-center">
-    <p className="text-sm font-medium\">The Sovereign Negotiator</p>
-    <p className="text-xs text-muted-foreground\">© 2026 | Made with sovereignty in Singapore</p>
-  </footer>
-)
-
-// Main App
-function App() {
-  const scrollToVoice = () => document.getElementById('voice-section')?.scrollIntoView({ behavior: 'smooth' })
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Toaster position="top-center" richColors />
-      <HeroSection onStartDemo={scrollToVoice} />
-      <VoiceEnrollmentSection />
-      <StrategySection />
-      <NegotiationSection />
-      <ArchitectureSection />
-      <LaunchSection />
-      <MoatSection />
-      <Footer />
+              <span className="font-medium">The Sovereign Negotiator</span>
+            </div>
+            <p className="text-xs text-gray-500">© 2026 | Made with sovereignty in Singapore</p>
+          </div>
+        </footer>
+      </main>
     </div>
   )
 }
