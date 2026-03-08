@@ -36,9 +36,12 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* Text gradients */
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400;
 }
@@ -47,52 +50,47 @@
   @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400;
 }
 
+/* Glass effect - static, no animation */
 .glass {
   @apply bg-white/5 backdrop-blur-xl border border-white/10;
 }
 
+/* Subtle grid pattern - static */
 .grid-pattern {
   background-image: 
     linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
+  background-attachment: fixed;
 }
 
-/* Smooth subtle glow - reduced from aggressive pulse */
+/* VERY subtle glow - no animation that causes shake */
 .glow-border {
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15), 0 0 40px rgba(34, 211, 238, 0.05);
 }
 
-/* Much smoother animation - 4s instead of 2s, less intensity */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
-  50% { box-shadow: 0 0 18px rgba(34, 211, 238, 0.35); }
+/* Static pulse - no transform, just opacity */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-  will-change: box-shadow;
+.animate-subtle-pulse {
+  animation: subtle-pulse 3s ease-in-out infinite;
 }
 
-/* Smoother float animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+/* Gentle float - minimal movement */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
 }
 
 .animate-float {
-  animation: float 5s ease-in-out infinite;
+  animation: gentle-float 4s ease-in-out infinite;
   will-change: transform;
 }
 
-/* Performance optimization */
-.grid-pattern,
-.glass,
-.animate-pulse-glow {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -102,4 +100,7 @@
 ::-webkit-scrollbar-thumb {
   background: hsl(220 10% 20%);
   border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(180 100% 50% / 0.3);
 }
