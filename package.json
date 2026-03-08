@@ -1,11 +1,11 @@
-{
+﻿{
     "name":  "sovereign-negotiator",
     "private":  true,
     "version":  "0.0.0",
     "type":  "module",
     "scripts":  {
                     "dev":  "vite",
-                    "build":  "tsc \u0026\u0026 vite build",
+                    "build":  "tsc \u0026\u0026 npx vite build",
                     "lint":  "eslint .",
                     "preview":  "vite preview"
                 },
