@@ -58,7 +58,48 @@
   background-size: 50px 50px;
 }
 
+/* Smooth subtle glow - reduced from aggressive pulse */
+.glow-border {
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
+}
 
-/* Performance fixes */
-.animate-pulse-glow { will-change: box-shadow; }
-.grid-pattern { will-change: transform; }
+/* Much smoother animation - 4s instead of 2s, less intensity */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
+  50% { box-shadow: 0 0 18px rgba(34, 211, 238, 0.35); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
+/* Smoother float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Performance optimization */
+.grid-pattern,
+.glass,
+.animate-pulse-glow {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(220 15% 5%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(220 10% 20%);
+  border-radius: 4px;
+}
