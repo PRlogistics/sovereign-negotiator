@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 220 15% 5%;
-    --foreground: 0 0% 98%;
-    --card: 220 15% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 220 15% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 180 100% 50%;
-    --primary-foreground: 220 15% 5%;
-    --secondary: 220 10% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 10% 15%;
-    --muted-foreground: 220 10% 60%;
-    --accent: 280 100% 60%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 20%;
-    --input: 220 10% 20%;
-    --ring: 180 100% 50%;
-    --radius: 0.625rem;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 187 100% 42%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 187 100% 42%;
+    --radius: 0.75rem;
   }
 }
 
@@ -35,72 +35,43 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    @apply bg-[#0a0a0c] text-white antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Text gradients */
+/* Clean text gradient */
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-400;
 }
 
-.text-gradient-purple {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400;
+/* Professional card style */
+.card-dark {
+  @apply bg-[#111114] border border-white/[0.06] rounded-xl;
 }
 
-/* Glass effect - static, no animation */
-.glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+/* Subtle hover effect */
+.hover-lift {
+  @apply transition-all duration-200 hover:border-white/10 hover:bg-white/[0.02];
 }
 
-/* Subtle grid pattern - static */
-.grid-pattern {
-  background-image: 
-    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-attachment: fixed;
-}
-
-/* VERY subtle glow - no animation that causes shake */
-.glow-border {
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15), 0 0 40px rgba(34, 211, 238, 0.05);
-}
-
-/* Static pulse - no transform, just opacity */
-@keyframes subtle-pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
-}
-
-.animate-subtle-pulse {
-  animation: subtle-pulse 3s ease-in-out infinite;
-}
-
-/* Gentle float - minimal movement */
-@keyframes gentle-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-}
-
-.animate-float {
-  animation: gentle-float 4s ease-in-out infinite;
-  will-change: transform;
-}
-
-/* Scrollbar */
+/* Smooth scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(220 15% 5%);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(220 10% 20%);
-  border-radius: 4px;
+  background: #27272a;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(180 100% 50% / 0.3);
+  background: #3f3f46;
+}
+
+/* Selection */
+::selection {
+  background: rgba(34, 211, 238, 0.2);
 }
